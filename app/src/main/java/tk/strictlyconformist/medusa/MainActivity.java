@@ -22,18 +22,10 @@ public class MainActivity extends AppCompatActivity{
         EditText portText = (EditText) findViewById(R.id.port);
         final String hostname = serverText.getText().toString();
         final int  port = Integer.parseInt(portText.getText().toString());
-        /**
-        if(portText.getText() != null) {
-            port = Integer.parseInt(portText.getText().toString());
-         */
+        final Server myServer = new Server(hostname,port);
         new Thread(new Runnable(){
             public void run(){
-                try {
-                    new Socket(hostname,port);
-                }
-                catch(IOException except){
-                    System.err.println(except.getMessage());
-                }
+                myServer.connect();
             }
         }).start();
     }
