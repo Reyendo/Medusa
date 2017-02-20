@@ -1,12 +1,9 @@
 package tk.strictlyconformist.medusa;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
-
-import java.io.IOException;
-import java.net.Socket;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -17,16 +14,8 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
     }
 
-    public void connect(View view) throws IOException{
-        EditText serverText = (EditText) findViewById(R.id.server);
-        EditText portText = (EditText) findViewById(R.id.port);
-        final String hostname = serverText.getText().toString();
-        final int  port = Integer.parseInt(portText.getText().toString());
-        final Server myServer = new Server(hostname,port);
-        new Thread(new Runnable(){
-            public void run(){
-                myServer.connect();
-            }
-        }).start();
+    public void createServer(View view){
+        Intent intent = new Intent(this, CreateServerActivity.class);
+        startActivity(intent);
     }
 }
