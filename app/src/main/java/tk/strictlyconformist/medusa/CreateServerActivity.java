@@ -29,6 +29,7 @@ public class CreateServerActivity extends AppCompatActivity {
             public void run(){
                 myServer.connect();
                 myServer.logIn();
+                myServer.connectData();
             }
         }).start();
     }
