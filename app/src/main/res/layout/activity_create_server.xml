@@ -16,6 +16,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Port" />
+    <EditText android:id="@+id/userName"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Username" />
+    <EditText android:id="@+id/password"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Password" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
