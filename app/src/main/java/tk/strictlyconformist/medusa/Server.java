@@ -8,9 +8,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * Created by reyendo on 2/19/2017.
- */
 
 public class Server {
     private static final String TAG = "Server";
@@ -76,6 +73,7 @@ public class Server {
                         }
                     }
                     dataPort = (p1*256)+p2;
+                    break;
                 }
             }
         }catch(IOException except){
@@ -86,6 +84,27 @@ public class Server {
     public void connectData(){
         try {
             dataSocket = new Socket(host,dataPort);
+            BufferedReader in = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
+            String inBuffer;
+            PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
+            out.println("TYPE I\r\n");
+            inBuffer = in.readLine();
+            Log.i(TAG,inBuffer);
+            out.println("LIST\r\n");
+            inBuffer = in.readLine();
+            Log.i(TAG,inBuffer);
+        }catch(IOException except){
+            Log.e(TAG,except.getMessage());
+        }
+    }
+
+    public void retDirectory(){
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+            String inBuffer;
+            while((inBuffer = in.readLine()) != null){
+                Log.i(TAG,inBuffer);
+            }
         }catch(IOException except){
             Log.e(TAG,except.getMessage());
         }
