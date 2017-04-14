@@ -24,11 +24,6 @@ public class Server {
         commandPort = portNumber;
     }
 
-    public Server(String hostname){
-        host=hostname;
-        commandPort = 21;
-    }
-
     public void connect(){
         try{
             commandSocket = new Socket(host,commandPort);
@@ -48,7 +43,6 @@ public class Server {
             while((inBuffer = in.readLine()) != null)
             {
                 Log.i(TAG,inBuffer);
-                // Messy code below. Clean up later.
                 if(Integer.parseInt(inBuffer.substring(0,3)) == 227) {
                     int p1=0,p2=0,x=0;
                     for (int i = inBuffer.length()-1;i>0;i--) {
