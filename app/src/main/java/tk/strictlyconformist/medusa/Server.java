@@ -1,13 +1,19 @@
 package tk.strictlyconformist.medusa;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 
@@ -22,6 +28,51 @@ public class Server {
     public Server(String hostname, int portNumber){
         host = hostname;
         commandPort = portNumber;
+    }
+
+    public String getHost()
+    {return host;}
+
+    public void saveToDisk(Context ctx){
+        String FILENAME = "servers.dat";
+        CharBuffer charBuffer = CharBuffer.allocate(userName.length()+host.length());
+        charBuffer.put(userName+host);
+        ByteBuffer converter = Charset.forName("ISO-8859-1").encode(charBuffer);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(charBuffer.length()+(Integer.SIZE/Byte.SIZE));
+        byteBuffer.put(converter);
+        byteBuffer.putInt(commandPort);
+        byteBuffer.rewind();
+        try {
+            FileOutputStream fos = ctx.openFileOutput(FILENAME, Context.MODE_APPEND);
+            fos.write(byteBuffer.get());
+            fos.close();
+        }catch(IOException except){
+            Log.e(TAG,except.getMessage());
+        }
+    }
+
+    public static ArrayList<Server> readFromDisk(Context ctx){
+        String FILENAME = "servers.dat";
+        ArrayList<Server> serverList = null;
+        try {
+            FileInputStream fis = ctx.openFileInput(FILENAME);
+            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+            String inBuffer;
+            while((inBuffer = in.readLine()) != null)
+            {
+                String hostName = inBuffer.substring(0,255);
+                int portNumber = Integer.parseInt(inBuffer.substring(255,260));
+                String user = inBuffer.substring(262,294);
+                Server newServer = new Server(hostName,portNumber);
+                newServer.userName = user;
+                serverList.add(newServer);
+                Log.i(TAG,"SAVED "+inBuffer);
+            }
+            fis.close();
+        }catch(IOException except){
+            Log.e(TAG,except.getMessage());
+        }
+        return serverList;
     }
 
     public void connect(){

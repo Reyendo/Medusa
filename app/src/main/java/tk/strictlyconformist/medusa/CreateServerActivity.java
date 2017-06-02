@@ -15,25 +15,58 @@ public class CreateServerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_server);
     }
 
-    public void connect(View view) throws IOException {
-        EditText serverText = (EditText) findViewById(R.id.server);
+    public void save(final View view)
+    {
+        EditText addressText = (EditText) findViewById(R.id.address);
         EditText portText = (EditText) findViewById(R.id.port);
         EditText userText = (EditText) findViewById(R.id.userName);
         EditText passText = (EditText) findViewById(R.id.password);
-        final String hostname;
+        final String address;
         final int  port;
         final Server myServer;
-        if (serverText.getText().length() == 0) {
-            hostname = "127.0.0.1";
+        if (addressText.getText().length() == 0) {
+            address = "127.0.0.1";
         }else{
-            hostname = serverText.getText().toString();
+            address = addressText.getText().toString();
         }
         if (portText.getText().length() == 0){
             port = 21;
         }else{
             port = Integer.parseInt(portText.getText().toString());
         }
-        myServer = new Server(hostname,port);
+        myServer = new Server(address,port);
+        if (userText.getText().length() == 0){
+            myServer.userName = "anonymous";
+        }else{
+            myServer.userName = userText.getText().toString();
+        }
+        if (passText.getText().length() == 0){
+            myServer.password = "guest";
+        }else{
+            myServer.password = passText.getText().toString();
+        }
+        myServer.saveToDisk(view.getContext());
+    }
+
+    public void connect(final View view) throws IOException {
+        EditText addressText = (EditText) findViewById(R.id.address);
+        EditText portText = (EditText) findViewById(R.id.port);
+        EditText userText = (EditText) findViewById(R.id.userName);
+        EditText passText = (EditText) findViewById(R.id.password);
+        final String address;
+        final int  port;
+        final Server myServer;
+        if (addressText.getText().length() == 0) {
+            address = "127.0.0.1";
+        }else{
+            address = addressText.getText().toString();
+        }
+        if (portText.getText().length() == 0){
+            port = 21;
+        }else{
+            port = Integer.parseInt(portText.getText().toString());
+        }
+        myServer = new Server(address,port);
         if (userText.getText().length() == 0){
             myServer.userName = "anonymous";
         }else{
@@ -47,6 +80,7 @@ public class CreateServerActivity extends AppCompatActivity {
 
         new Thread(new Runnable(){
             public void run(){
+                myServer.readFromDisk(view.getContext());
                 myServer.connect();
                 myServer.logIn();
                 myServer.connectData();
