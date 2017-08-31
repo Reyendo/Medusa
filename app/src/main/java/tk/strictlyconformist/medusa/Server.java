@@ -13,33 +13,33 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 
-public class Server {
+class Server {
     private static final String TAG = "Server";
     private String host;
     private int commandPort,dataPort;
-    public String userName;
-    public String password;
+    String userName;
+    String password;
     private Socket commandSocket,dataSocket;
 
-    public Server(String hostname, int portNumber){
+    Server(String hostname, int portNumber){
         host = hostname;
         commandPort = portNumber;
     }
 
-    public String getHost()
+    String getHost()
     {return host;}
 
-    public void saveToDisk(Context ctx){
+    void saveToDisk(Context ctx){
         String FILENAME = "servers.dat";
-        CharBuffer charBuffer = CharBuffer.allocate(userName.length()+host.length());
-        charBuffer.put(userName+host);
-        ByteBuffer converter = Charset.forName("ISO-8859-1").encode(charBuffer);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(charBuffer.length()+(Integer.SIZE/Byte.SIZE));
-        byteBuffer.put(converter);
+        CharBuffer charBuffer = CharBuffer.allocate(288);
+        char[] buff1 = new char[32-userName.length()];
+        char[] buff2 = new char[255-host.length()];
+        charBuffer.put(userName+buff1+host+buff2);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(288+(Integer.SIZE/Byte.SIZE));
+        byteBuffer.put(new String(charBuffer.array()).getBytes());
         byteBuffer.putInt(commandPort);
         byteBuffer.rewind();
         try {
@@ -51,31 +51,51 @@ public class Server {
         }
     }
 
-    public static ArrayList<Server> readFromDisk(Context ctx){
+    static ArrayList<Server> readFromDisk(Context ctx){
         String FILENAME = "servers.dat";
         ArrayList<Server> serverList = null;
         try {
             FileInputStream fis = ctx.openFileInput(FILENAME);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
-            String inBuffer;
-            while((inBuffer = in.readLine()) != null)
-            {
-                String hostName = inBuffer.substring(0,255);
-                int portNumber = Integer.parseInt(inBuffer.substring(255,260));
-                String user = inBuffer.substring(262,294);
-                Server newServer = new Server(hostName,portNumber);
-                newServer.userName = user;
-                serverList.add(newServer);
-                Log.i(TAG,"SAVED "+inBuffer);
-            }
+            byte[] userBuff = new byte[32];
+            byte[] hostBuff = new byte[255];
+            byte[] portBuff = new byte[Integer.SIZE/Byte.SIZE];
+            fis.read(userBuff);
+            fis.read(hostBuff);
+            fis.read(portBuff);
             fis.close();
+            String tempString = null;
+            for(int i=0;i<hostBuff.length;i++)
+            {
+                if(hostBuff[i] == '\0' || i == hostBuff.length-1)
+                {
+                    byte[] tempByte = new byte[i];
+                    System.arraycopy(hostBuff,0,tempByte,0,i);
+                    tempString = new String(tempByte);
+                    Log.i(TAG,"hostBuff converted!");
+                    Log.i(TAG,"converted == "+tempString);
+                    break;
+                }
+            }
+            Log.i(TAG,"tempString == "+tempString);
+            Server serverBuff = new Server(tempString, java.nio.ByteBuffer.wrap(portBuff).getInt());
+            for(int i=0;i<userBuff.length;i++)
+            {
+                if(userBuff[i] == '\0')
+                {
+                    byte[] tempByte = new byte[i];
+                    System.arraycopy(userBuff,0,tempByte,0,i);
+                    tempString = new String(tempByte);
+                }
+            }
+            serverBuff.userName = tempString;
+            serverList.add(serverBuff);
         }catch(IOException except){
             Log.e(TAG,except.getMessage());
         }
         return serverList;
     }
 
-    public void connect(){
+    void connect(){
         try{
             commandSocket = new Socket(host,commandPort);
         }catch(IOException except){
@@ -83,7 +103,7 @@ public class Server {
         }
     }
 
-    public void logIn(){
+    void logIn(){
         try{
             BufferedReader in = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
             PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
@@ -127,8 +147,7 @@ public class Server {
             Log.e(TAG,except.getMessage());
         }
     }
-
-    public void connectData(){
+    void connectData(){
         try {
             dataSocket = new Socket(host,dataPort);
             BufferedReader in = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
@@ -142,7 +161,7 @@ public class Server {
         }
     }
 
-    public void retDirectory(){
+   void returnDirectory(){
         try {
             PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
             BufferedReader in = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));

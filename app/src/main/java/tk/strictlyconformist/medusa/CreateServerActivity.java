@@ -84,7 +84,7 @@ public class CreateServerActivity extends AppCompatActivity {
                 myServer.connect();
                 myServer.logIn();
                 myServer.connectData();
-                myServer.retDirectory();
+                myServer.returnDirectory();
             }
         }).start();
     }
