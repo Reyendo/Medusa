@@ -3,16 +3,16 @@ package tk.strictlyconformist.medusa;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 
 
@@ -34,63 +34,33 @@ class Server {
 
     void saveToDisk(Context ctx){
         String FILENAME = "servers.dat";
-        CharBuffer charBuffer = CharBuffer.allocate(288);
-        char[] buff1 = new char[32-userName.length()];
-        char[] buff2 = new char[255-host.length()];
-        charBuffer.put(userName+buff1+host+buff2);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(288+(Integer.SIZE/Byte.SIZE));
-        byteBuffer.put(new String(charBuffer.array()).getBytes());
-        byteBuffer.putInt(commandPort);
-        byteBuffer.rewind();
         try {
-            FileOutputStream fos = ctx.openFileOutput(FILENAME, Context.MODE_APPEND);
-            fos.write(byteBuffer.get());
-            fos.close();
-        }catch(IOException except){
-            Log.e(TAG,except.getMessage());
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(ctx.openFileOutput(FILENAME, Context.MODE_APPEND)));
+            out.writeUTF(userName);
+            out.writeUTF(host);
+            out.writeInt(commandPort);
+            out.close();
+        }catch(IOException except) {
+            Log.e(TAG, except.getMessage());
         }
     }
 
+    // Needs serious work. I need to fix Server's constructors and privacy settings and I need to turn this into a loop.
+    // Variable names need to be normalized and corrected, and I need to cut down on all the temp variables.
     static ArrayList<Server> readFromDisk(Context ctx){
         String FILENAME = "servers.dat";
-        ArrayList<Server> serverList = null;
-        try {
-            FileInputStream fis = ctx.openFileInput(FILENAME);
-            byte[] userBuff = new byte[32];
-            byte[] hostBuff = new byte[255];
-            byte[] portBuff = new byte[Integer.SIZE/Byte.SIZE];
-            fis.read(userBuff);
-            fis.read(hostBuff);
-            fis.read(portBuff);
-            fis.close();
-            String tempString = null;
-            for(int i=0;i<hostBuff.length;i++)
-            {
-                if(hostBuff[i] == '\0' || i == hostBuff.length-1)
-                {
-                    byte[] tempByte = new byte[i];
-                    System.arraycopy(hostBuff,0,tempByte,0,i);
-                    tempString = new String(tempByte);
-                    Log.i(TAG,"hostBuff converted!");
-                    Log.i(TAG,"converted == "+tempString);
-                    break;
-                }
-            }
-            Log.i(TAG,"tempString == "+tempString);
-            Server serverBuff = new Server(tempString, java.nio.ByteBuffer.wrap(portBuff).getInt());
-            for(int i=0;i<userBuff.length;i++)
-            {
-                if(userBuff[i] == '\0')
-                {
-                    byte[] tempByte = new byte[i];
-                    System.arraycopy(userBuff,0,tempByte,0,i);
-                    tempString = new String(tempByte);
-                }
-            }
-            serverBuff.userName = tempString;
-            serverList.add(serverBuff);
-        }catch(IOException except){
-            Log.e(TAG,except.getMessage());
+        ArrayList<Server> serverList = new ArrayList<>();
+        try{
+            DataInputStream in = new DataInputStream(new BufferedInputStream(ctx.openFileInput(FILENAME)));
+            String userString = in.readUTF();
+            String hostString = in.readUTF();
+            int portTemp = in.readInt();
+            in.close();
+            Server serverTemp = new Server(hostString,portTemp);
+            serverTemp.userName = userString;
+            serverList.add(serverTemp);
+        }catch(IOException except) {
+            except.printStackTrace();
         }
         return serverList;
     }
