@@ -1,6 +1,7 @@
 package tk.strictlyconformist.medusa;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -8,7 +9,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -27,10 +27,12 @@ class Server {
     Server(String hostname, int portNumber){
         host = hostname;
         commandPort = portNumber;
+        userName = "anonymous";
+        password = "anonymous@domain.com";
     }
 
     String getHost()
-    {return host;}
+    { return host; }
 
     void saveToDisk(Context ctx){
         String FILENAME = "servers.dat";
@@ -65,16 +67,9 @@ class Server {
         return serverList;
     }
 
-    void connect(){
-        try{
-            commandSocket = new Socket(host,commandPort);
-        }catch(IOException except){
-            Log.e(TAG,except.getMessage());
-        }
-    }
-
     void logIn(){
         try{
+            commandSocket = new Socket(host,commandPort);
             BufferedReader in = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
             PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
             out.println("USER "+userName+"\r\n");
@@ -113,16 +108,7 @@ class Server {
                     break;
                 }
             }
-        }catch(IOException except){
-            Log.e(TAG,except.getMessage());
-        }
-    }
-    void connectData(){
-        try {
             dataSocket = new Socket(host,dataPort);
-            BufferedReader in = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
-            String inBuffer;
-            PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
             out.println("TYPE I\r\n");
             inBuffer = in.readLine();
             Log.i(TAG,inBuffer);
@@ -131,7 +117,7 @@ class Server {
         }
     }
 
-   void returnDirectory(){
+   void returnDirectory(Context ctx){
         try {
             PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
             BufferedReader in = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
@@ -141,20 +127,15 @@ class Server {
             out.println("XPWD\r\n");
             comBuffer = comIn.readLine();
             Log.i(TAG,comBuffer);
-            String tempString = "";
-            for(int i=5;i<comBuffer.length();i++) {
-                if (comBuffer.charAt(i) == '"') {
-                    tempString = comBuffer.substring(5, i);
-                    break;
-                }
-            }
-            File cwd = new File(tempString);
             out.println("LIST\r\n");
-            ArrayList<File> cwdContents = new ArrayList<>();
-            while((inBuffer = in.readLine()) != null){
-                Log.i(TAG,inBuffer);
-                cwdContents.add(new File(cwd, inBuffer.substring(56)));
-            }
+            ArrayList<String> cwdContents = new ArrayList<>();
+            while((inBuffer = in.readLine()) != null)
+            { cwdContents.add(inBuffer.substring(56)); }
+            Intent directory_content_intent = new Intent(ctx, ListDirectoryActivity.class);
+            directory_content_intent.putStringArrayListExtra("cwdContents",cwdContents);
+            for(int i=0;i<cwdContents.size();i++)
+            { Log.i(TAG,cwdContents.get(i)); }
+            ctx.startActivity(directory_content_intent);
         }catch(IOException except){
             Log.e(TAG,except.getMessage());
         }
