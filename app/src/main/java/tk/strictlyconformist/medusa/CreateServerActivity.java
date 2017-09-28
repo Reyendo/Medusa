@@ -6,8 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
-import java.io.IOException;
-
 public class CreateServerActivity extends AppCompatActivity {
 
     @Override
@@ -16,7 +14,7 @@ public class CreateServerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_server);
     }
 
-    Server grabInput()
+    private Server grabInput()
     {
         EditText addressText = (EditText) findViewById(R.id.address);
         EditText portText = (EditText) findViewById(R.id.port);
@@ -48,7 +46,7 @@ public class CreateServerActivity extends AppCompatActivity {
         myServer.saveToDisk(view.getContext());
     }
 
-    public void connect(final View view) throws IOException {
+    public void connect(final View view) {
         final Server myServer = grabInput();
 
         new Thread(new Runnable(){

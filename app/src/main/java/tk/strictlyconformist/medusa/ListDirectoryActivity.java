@@ -9,14 +9,14 @@ import java.util.ArrayList;
 
 public class ListDirectoryActivity extends AppCompatActivity {
 
-    ListView directoryListView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_directory);
-        directoryListView = (ListView) findViewById(R.id.directory_list_view);
+        ListView directoryListView = (ListView) findViewById(R.id.directory_list_view);
         ArrayList<String> cwdContents = getIntent().getStringArrayListExtra("cwdContents");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cwdContents);
+        assert directoryListView != null;
         directoryListView.setAdapter(adapter);
     }
 }

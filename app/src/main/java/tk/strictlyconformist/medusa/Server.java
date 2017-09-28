@@ -18,8 +18,9 @@ import java.util.ArrayList;
 
 class Server {
     private static final String TAG = "Server";
-    private String host;
-    private int commandPort,dataPort;
+    private final String host;
+    private final int commandPort;
+    private int dataPort;
     String userName;
     String password;
     private Socket commandSocket,dataSocket;
