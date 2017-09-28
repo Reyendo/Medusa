@@ -1,7 +1,6 @@
 package tk.strictlyconformist.medusa;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -48,8 +47,6 @@ class Server {
         }
     }
 
-    // Needs serious work. I need to fix Server's constructors and privacy settings and I need to turn this into a loop.
-    // Variable names need to be normalized and corrected, and I need to cut down on all the temp variables.
     static ArrayList<Server> readFromDisk(Context ctx){
         String FILENAME = "servers.dat";
         ArrayList<Server> serverList = new ArrayList<>();
@@ -118,7 +115,8 @@ class Server {
         }
     }
 
-   void returnDirectory(Context ctx){
+   ArrayList<String> returnDirectory(){
+       ArrayList<String> cwdContents = new ArrayList<>();
         try {
             PrintWriter out = new PrintWriter(commandSocket.getOutputStream(),true);
             BufferedReader in = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
@@ -129,16 +127,11 @@ class Server {
             comBuffer = comIn.readLine();
             Log.i(TAG,comBuffer);
             out.println("LIST\r\n");
-            ArrayList<String> cwdContents = new ArrayList<>();
             while((inBuffer = in.readLine()) != null)
             { cwdContents.add(inBuffer.substring(56)); }
-            Intent directory_content_intent = new Intent(ctx, ListDirectoryActivity.class);
-            directory_content_intent.putStringArrayListExtra("cwdContents",cwdContents);
-            for(int i=0;i<cwdContents.size();i++)
-            { Log.i(TAG,cwdContents.get(i)); }
-            ctx.startActivity(directory_content_intent);
         }catch(IOException except){
             Log.e(TAG,except.getMessage());
         }
+        return cwdContents;
     }
 }

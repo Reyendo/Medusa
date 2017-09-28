@@ -1,17 +1,32 @@
 package tk.strictlyconformist.medusa;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import java.util.ArrayList;
+
 public class CreateServerActivity extends AppCompatActivity {
+    ArrayList<String> cwdContents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_server);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                Log.i("DirectoryListItem",cwdContents.get(data.getIntExtra("result",0)));
+            }
+        }
     }
 
     private Server grabInput()
@@ -52,7 +67,10 @@ public class CreateServerActivity extends AppCompatActivity {
         new Thread(new Runnable(){
             public void run(){
                 myServer.logIn();
-                myServer.returnDirectory(view.getContext());
+                cwdContents = myServer.returnDirectory();
+                Intent directory_content_intent = new Intent(view.getContext(), ListDirectoryActivity.class);
+                directory_content_intent.putStringArrayListExtra("cwdContents",cwdContents);
+                startActivityForResult(directory_content_intent,1);
             }
         }).start();
     }
