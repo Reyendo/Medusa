@@ -28,7 +28,12 @@ public class CreateServerActivity extends AppCompatActivity {
         if(addressText != null && !TextUtils.isEmpty(addressText.getText()))
         { address = addressText.getText().toString(); } else { address = "127.0.0.1"; }
         if(portText != null && !TextUtils.isEmpty(portText.getText()))
-        { port = Integer.parseInt(portText.getText().toString()); } else { port = 21; }
+        {
+            int tempPort;
+            try { tempPort = Integer.parseInt(portText.getText().toString()); }
+            catch (NumberFormatException except) { tempPort = 21; }
+            port = tempPort;
+        } else { port = 21; }
         myServer = new Server(address,port);
         if(userText != null && !TextUtils.isEmpty(userText.getText()))
         { myServer.userName = userText.getText().toString(); }

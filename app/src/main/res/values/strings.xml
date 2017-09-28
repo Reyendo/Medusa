@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Medusa</string>
     <string name="title_activity_list_directory">ListDirectory</string>
+    <string name="new_server">New Server</string>
+    <string name="server_address">Server Address</string>
+    <string name="port_number">Port Number</string>
+    <string name="user_name">User Name</string>
+    <string name="password">Password</string>
+    <string name="save">Save</string>
+    <string name="connect">Connect</string>
 </resources>
